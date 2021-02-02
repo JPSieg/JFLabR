@@ -202,16 +202,16 @@ stops.extract = function(file.wif,
 
   ggplot2::ggplot() +
     ggplot2::geom_hline(yintercept = df$Transcripthead.mean[1], size = 1, color = "blue") +
-    ggplot2::geom_point(data = df, mapping = aes(x = N, y = Stops), color = "grey") +
-    ggplot2::geom_line(data = df, mapping = aes(x = N, y = Window.mean), size = 1) +
+    ggplot2::geom_point(data = df, mapping = ggplot2::aes(x = N, y = Stops), color = "grey") +
+    ggplot2::geom_line(data = df, mapping = ggplot2::aes(x = N, y = Window.mean), size = 1) +
     ggplot2::theme_classic()
 
   if (Use_custom_windows){
     ggplot2::ggplot() +
       ggplot2::geom_hline(yintercept = df$Transcripthead.mean[1], size = 1, color = "blue") +
-      ggplot2::geom_point(data = df, mapping = aes(x = N, y = Stops), color = "grey") +
-      ggplot2::geom_line(data = df, mapping = aes(x = N, y = Window.mean), size = 1) +
-      ggplot2::geom_line(data = df, mapping = aes(x = N, y = Custom.window.mean, color = Labels), size = 1) +
+      ggplot2::geom_point(data = df, mapping = ggplot2::aes(x = N, y = Stops), color = "grey") +
+      ggplot2::geom_line(data = df, mapping = ggplot2::aes(x = N, y = Window.mean), size = 1) +
+      ggplot2::geom_line(data = df, mapping = ggplot2::aes(x = N, y = Custom.window.mean, color = Labels), size = 1) +
       ggplot2::theme_classic()
   }
 
