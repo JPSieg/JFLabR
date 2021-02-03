@@ -166,7 +166,6 @@ stops.extract = function(file.wig,
       }
       Window.mean = c(Window.mean, rep(NA, length(df$N) - length(Window.mean)))
       df$Window.mean <- Window.mean
-    }
     }else{
 
       df.start.count.1 <- df
@@ -199,6 +198,7 @@ stops.extract = function(file.wig,
       df$Window.mean =- Window.mean
       df$Window.absolute.size = Window.absolute.size
     }
+  }
 
   #plot(df$N, df$Window.mean)
 
@@ -210,8 +210,7 @@ stops.extract = function(file.wig,
       }
       Window.mean = c(Window.mean, rep(NA, length(df$N) - length(Window.mean)))
       df$Window.mean <- Window.mean
-    }
-  }else{
+    }else{
 
     df.start.count.1 <- df
     df.start.count.1$N <- 1:length(df$N)
@@ -242,6 +241,7 @@ stops.extract = function(file.wig,
     Window.absolute.size = c(Window.absolute.size, rep(NA, length(df$N) - length(Window.absolute.size)))
     df$Window.mean <- Window.mean
     df$Window.absolute.size = Window.absolute.size
+    }
   }
 
   #plot(df$N, df$Window.mean)
