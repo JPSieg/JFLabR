@@ -312,8 +312,11 @@ stops.extract = function(file.wig,
 
   df$Stops[which(is.na(df$Stops))] <- ""
   df$Window.mean[which(is.na(df$Window.mean))] <- ""
-  df$Custom.window.mean[which(is.na(df$Custom.window.mean))] <- ""
-  df$Labels[which(is.na(df$Labels))] <- ""
+
+  if (Use_custom_windows){
+    df$Custom.window.mean[which(is.na(df$Custom.window.mean))] <- ""
+    df$Labels[which(is.na(df$Labels))] <- ""
+  }
 
   ####Save data####
 
