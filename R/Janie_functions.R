@@ -48,7 +48,9 @@ read.wig = function(data_file, start, end){
 #'@param Winsorization Use the Winsorization method to normalize the data. Options: Default = TRUE to do the normalization or FALSE to skip the normalization.
 #'@param Normalization_quantile Quartile you want to do the Winsorization normalization to.
 #'@param Window Window type you want to use when calculating mean reactivities in sliding windows. Options: Default = "center" to apply the mean to the nucleotide at the center of the window, or "first" to apply the mean to the first nucleotide in the window.
-#'@param Window_size Width of the sliding window that you want to apply. Default = 10 nucleotides
+#'@param Window_size Width of the sliding window that you want to apply. Default = 10 nucleotides or any integer. If set to an even integer with Window_type = "center", the program will automatically set to the next highest odd integer.
+#'@param Window_step How many nucleotides to move before adding another sliding window calculation. Options: Default = 1 or any integer.
+#'@param Window_with_Gs_and_Us Include Gs and Us in a window size when calculating the means for sliding windows. Options: Default = TRUE to make the absolute window size (how many nucleotides in the RNA the mean averages over) exactly the same. FALSE to have windows only include As and Cs, resulting in inconsistent absolute window sizes.
 #'@param custum_windows A list of custum windows you want to calculate the mean for. Default = FALSE or a list of vectors in the format custom_windows = list(c(window1.start:window1.end), c(window2.start:window2.end)). Example: custom_windows = list(c(31:42), c(50:200)). Make sure that you use the relative location of the window on the RNA, not the absolute location on the genome.
 #'@return A csv file, a plot, and a dataframe
 #' @export
@@ -63,11 +65,15 @@ stops.extract = function(file.wig,
                          Normalization_quantile = 0.95,
                          Window = "center",
                          Window_size = 15,
+                         Window_step = 1,
+                         Window_with_Gs_and_Us = TRUE,
                          Use_custom_windows = FALSE,
                          custom_windows = list()){
   ####Read in .wig file####
 
   list.files()
+
+  #df = read.wig(file.wig , start, end)
 
   df = JFlabR::read.wig(file.wig , start, end)
 
@@ -148,24 +154,94 @@ stops.extract = function(file.wig,
       Window_size = Window_size + 1
       print(paste("Window size changed to", Window_size))
     }
-    Window.mean = c()
-    edges = floor(0.5*Window_size)
-    for (i in (edges + 1):(length(df$N)-(edges))){
-      Window.mean[i] <- mean(df$Stops[(i - edges):(i + edges)][-which(is.na(df$Stops[(i - edges):(i + edges)]))])
+    if (Window_with_Gs_and_Us){
+      Window.mean = c()
+      edges = floor(0.5*Window_size)
+
+      #?seq
+      #Window_step = 3
+
+      for (i in seq(edges + 1, length(df$N)-(edges), Window_step)){
+        Window.mean[i] <- mean(df$Stops[(i - edges):(i + edges)][-which(is.na(df$Stops[(i - edges):(i + edges)]))])
+      }
+      Window.mean = c(Window.mean, rep(NA, length(df$N) - length(Window.mean)))
+      df$Window.mean <- Window.mean
     }
-    Window.mean = c(Window.mean, rep(NA, edges))
-    df$Window.mean <- Window.mean
-  }
+    }else{
+
+      df.start.count.1 <- df
+      df.start.count.1$N <- 1:length(df$N)
+
+      if (Nucleic_acid == "RNA"){
+        df.No.Gs.and.Us <- dplyr::filter(dplyr::filter(df.start.count.1, Nucleotide != "G"), Nucleotide != "U")
+      }
+      if (Nucleic_acid == "DNA"){
+        df.No.Gs.and.Us <- dplyr::filter(dplyr::filter(df.start.count.1, Nucleotide != "G"), Nucleotide != "T")
+      }
+
+      edges = floor(0.5*Window_size)
+      index <- df.No.Gs.and.Us$N
+      #?seq
+      Window_step = 1
+
+      Window.mean = c()
+      Window.absolute.size = c()
+
+      for (i in seq(edges + 1, length(df.No.Gs.and.Us$N)-(edges), Window_step)){
+        Window.mean[index[i]] <- mean(df.No.Gs.and.Us$Stops[(i - edges):(i + edges)])
+        Window.absolute.size[index[i]] = paste(df.start.count.1$Nucleotide[index[i - edges]], df.start.count.1$N[index[i - edges]],
+                                               " to ",
+                                               df.start.count.1$Nucleotide[index[i + edges]], df.start.count.1$N[index[i + edges]],
+                                               sep = "")
+      }
+      Window.mean = c(Window.mean, rep(NA, length(df$N) - length(Window.mean)))
+      Window.absolute.size = c(Window.absolute.size, rep(NA, length(df$N) - length(Window.absolute.size)))
+      df$Window.mean =- Window.mean
+      df$Window.absolute.size = Window.absolute.size
+    }
 
   #plot(df$N, df$Window.mean)
 
   if (Window == "first"){
-    Window.mean = c()
-    for (i in 1:(length(df$N)-(Window_size))){
-      Window.mean[i] <- mean(df$Stops[(i):(i + Window_size -1)][-which(is.na(df$Stops[(i):(i + Window_size -1)]))])
+    if (Window_with_Gs_and_Us){
+      Window.mean = c()
+      for (i in seq(1, length(df$N)-(Window_size), Window_step)){
+        Window.mean[i] <- mean(df$Stops[(i):(i + Window_size -1)][-which(is.na(df$Stops[(i):(i + Window_size -1)]))])
+      }
+      Window.mean = c(Window.mean, rep(NA, length(df$N) - length(Window.mean)))
+      df$Window.mean <- Window.mean
     }
-    Window.mean = c(Window.mean, rep(NA, Window_size))
+  }else{
+
+    df.start.count.1 <- df
+    df.start.count.1$N <- 1:length(df$N)
+
+    if (Nucleic_acid == "RNA"){
+      df.No.Gs.and.Us <- dplyr::filter(dplyr::filter(df.start.count.1, Nucleotide != "G"), Nucleotide != "U")
+    }
+    if (Nucleic_acid == "DNA"){
+      df.No.Gs.and.Us <- dplyr::filter(dplyr::filter(df.start.count.1, Nucleotide != "G"), Nucleotide != "T")
+    }
+
+    edges = floor(0.5*Window_size)
+    index <- df.No.Gs.and.Us$N
+    #?seq
+    #Window_step = 1
+
+    Window.mean = c()
+    Window.absolute.size = c()
+
+    for (i in seq(1, length(df.No.Gs.and.Us$N)-(Window_size), Window_step)){
+      Window.mean[index[i]] <- mean(df.No.Gs.and.Us$Stops[i:(i + Window_size - 1)])
+      Window.absolute.size[index[i]] = paste(df.start.count.1$Nucleotide[index[i]], df.start.count.1$N[index[i]],
+                                             " to ",
+                                             df.start.count.1$Nucleotide[index[i + Window_size - 1]], df.start.count.1$N[index[i + Window_size - 1]],
+                                             sep = "")
+    }
+    Window.mean = c(Window.mean, rep(NA, length(df$N) - length(Window.mean)))
+    Window.absolute.size = c(Window.absolute.size, rep(NA, length(df$N) - length(Window.absolute.size)))
     df$Window.mean <- Window.mean
+    df$Window.absolute.size = Window.absolute.size
   }
 
   #plot(df$N, df$Window.mean)

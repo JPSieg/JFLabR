@@ -16,6 +16,8 @@ stops.extract(
   Normalization_quantile = 0.95,
   Window = "center",
   Window_size = 15,
+  Window_step = 1,
+  Window_with_Gs_and_Us = TRUE,
   Use_custom_windows = FALSE,
   custom_windows = list()
 )
@@ -40,7 +42,11 @@ stops.extract(
 
 \item{Window}{Window type you want to use when calculating mean reactivities in sliding windows. Options: Default = "center" to apply the mean to the nucleotide at the center of the window, or "first" to apply the mean to the first nucleotide in the window.}
 
-\item{Window_size}{Width of the sliding window that you want to apply. Default = 10 nucleotides}
+\item{Window_size}{Width of the sliding window that you want to apply. Default = 10 nucleotides or any integer. If set to an even integer with Window_type = "center", the program will automatically set to the next highest odd integer.}
+
+\item{Window_step}{How many nucleotides to move before adding another sliding window calculation. Options: Default = 1 or any integer.}
+
+\item{Window_with_Gs_and_Us}{Include Gs and Us in a window size when calculating the means for sliding windows. Options: Default = TRUE to make the absolute window size (how many nucleotides in the RNA the mean averages over) exactly the same. FALSE to have windows only include As and Cs, resulting in inconsistent absolute window sizes.}
 
 \item{custum_windows}{A list of custum windows you want to calculate the mean for. Default = FALSE or a list of vectors in the format custom_windows = list(c(window1.start:window1.end), c(window2.start:window2.end)). Example: custom_windows = list(c(31:42), c(50:200)). Make sure that you use the relative location of the window on the RNA, not the absolute location on the genome.}
 }
