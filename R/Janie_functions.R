@@ -7,7 +7,7 @@
 #'@param end End of the nucleotide range you would like to pull out
 #'@return A data frame with the nucleotide number and the reactivity
 #' @export
-read.wif = function(data_file, start, end){
+read.wig = function(data_file, start, end){
   con = file(data_file)
 
   lines = readLines(con)
@@ -38,7 +38,7 @@ read.wif = function(data_file, start, end){
 #'with Gs and Us, Normalizes the data using the Winsorization method, calculates sliding window averages, and writes a csv file
 #'for subsequent analysis. It also plots the data as a png for convenient assessments of the result.
 #'
-#'@param file.wif Path to the .wif formatted file
+#'@param file.wig Path to the .wig formatted file
 #'@param file.fasta Path to the fasta file
 #'#'@param start End of the nucleotide range you would like to pull out
 #'@param end End of the nucleotide range you would like to pull out
@@ -52,7 +52,7 @@ read.wif = function(data_file, start, end){
 #'@param custum_windows A list of custum windows you want to calculate the mean for. Default = FALSE or a list of vectors in the format custom_windows = list(c(window1.start:window1.end), c(window2.start:window2.end)). Example: custom_windows = list(c(31:42), c(50:200)). Make sure that you use the relative location of the window on the RNA, not the absolute location on the genome.
 #'@return A csv file, a plot, and a dataframe
 #' @export
-stops.extract = function(file.wif,
+stops.extract = function(file.wig,
                          file.fasta,
                          start,
                          end,
@@ -62,14 +62,14 @@ stops.extract = function(file.wif,
                          Winsorization = TRUE,
                          Normalization_quantile = 0.95,
                          Window = "center",
-                         Window_size = 10,
+                         Window_size = 15,
                          Use_custom_windows = FALSE,
                          custom_windows = list()){
   ####Read in .wig file####
 
   list.files()
 
-  df = JFlabR::read.wif(file.wif , start, end)
+  df = JFlabR::read.wig(file.wig , start, end)
 
   print("Read in .wig file")
 
@@ -143,12 +143,17 @@ stops.extract = function(file.wif,
   ####Calculate average for a sliding widow####
 
   if (Window == "center"){
+    if (Window_size %% 2 == 0){
+      print("Warning your original window size was and even integer, which is not allowed for centered windows")
+      Window_size = Window_size + 1
+      print(paste("Window size changed to", Window_size))
+    }
     Window.mean = c()
-    edges = ceiling(0.5*Window_size)
-    for (i in Window_size:(length(df$N)-(Window_size))){
+    edges = floor(0.5*Window_size)
+    for (i in (edges + 1):(length(df$N)-(edges))){
       Window.mean[i] <- mean(df$Stops[(i - edges):(i + edges)][-which(is.na(df$Stops[(i - edges):(i + edges)]))])
     }
-    Window.mean = c(Window.mean, rep(NA, Window_size))
+    Window.mean = c(Window.mean, rep(NA, edges))
     df$Window.mean <- Window.mean
   }
 
@@ -223,17 +228,26 @@ stops.extract = function(file.wif,
 
   print("Save plot")
 
+  ####Make a data frame be an output####
+
+  output = df
+
+  #####Remove NAs so the data saves well####
+
+  df$Stops[which(is.na(df$Stops))] <- ""
+  df$Window.mean[which(is.na(df$Window.mean))] <- ""
+  df$Custom.window.mean[which(is.na(df$Custom.window.mean))] <- ""
+  df$Labels[which(is.na(df$Labels))] <- ""
+
   ####Save data####
 
   write.csv(df, paste(Name, "_", start, "_to_", end, ".csv", sep = ""), row.names = FALSE)
 
   print("Write csv")
 
-  ####Make a data frame be an output####
-
-  output = df
-
   print("Done")
+
+  output = output
 
   ####End####
 }

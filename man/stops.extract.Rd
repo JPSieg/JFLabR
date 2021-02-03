@@ -5,7 +5,7 @@
 \title{Quickly compiles stops data for analysis in other programs}
 \usage{
 stops.extract(
-  file.wif,
+  file.wig,
   file.fasta,
   start,
   end,
@@ -15,13 +15,13 @@ stops.extract(
   Winsorization = TRUE,
   Normalization_quantile = 0.95,
   Window = "center",
-  Window_size = 10,
+  Window_size = 15,
   Use_custom_windows = FALSE,
   custom_windows = list()
 )
 }
 \arguments{
-\item{file.wif}{Path to the .wif formatted file}
+\item{file.wig}{Path to the .wig formatted file}
 
 \item{file.fasta}{Path to the fasta file
 #'@param start End of the nucleotide range you would like to pull out}
