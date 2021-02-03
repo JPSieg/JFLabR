@@ -195,7 +195,7 @@ stops.extract = function(file.wig,
       }
       Window.mean = c(Window.mean, rep(NA, length(df$N) - length(Window.mean)))
       Window.absolute.size = c(Window.absolute.size, rep(NA, length(df$N) - length(Window.absolute.size)))
-      df$Window.mean =- Window.mean
+      df$Window.mean = Window.mean
       df$Window.absolute.size = Window.absolute.size
     }
   }
@@ -239,7 +239,7 @@ stops.extract = function(file.wig,
     }
     Window.mean = c(Window.mean, rep(NA, length(df$N) - length(Window.mean)))
     Window.absolute.size = c(Window.absolute.size, rep(NA, length(df$N) - length(Window.absolute.size)))
-    df$Window.mean <- Window.mean
+    df$Window.mean = Window.mean
     df$Window.absolute.size = Window.absolute.size
     }
   }
